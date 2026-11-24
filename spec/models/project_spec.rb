@@ -11612,7 +11612,7 @@ RSpec.describe Project, factory_default: :keep, feature_category: :groups_and_pr
 
     subject(:allows_multiple_merge_request_reviewers?) { project.allows_multiple_merge_request_reviewers? }
 
-    it { is_expected.to be(false) }
+    it { is_expected.to be(true) }
   end
 
   describe '#on_demand_dast_available?' do

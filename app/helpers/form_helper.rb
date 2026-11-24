@@ -137,7 +137,7 @@ module FormHelper
 
   # Overwritten
   def merge_request_supports_multiple_reviewers?
-    false
+    true
   end
 
   private

@@ -3822,7 +3822,7 @@ class Project < ApplicationRecord
 
   # Overridden in EE
   def allows_multiple_merge_request_reviewers?
-    false
+    true
   end
 
   # Overridden in EE
