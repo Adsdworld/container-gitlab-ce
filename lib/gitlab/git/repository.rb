@@ -1033,6 +1033,12 @@ module Gitlab
         end
       end
 
+      def archive_tar(commit_id, exclude: [], &)
+        wrapped_gitaly_errors do
+          gitaly_repository_client.get_archive_tar(commit_id, exclude: exclude, &)
+        end
+      end
+
       def bundle_to_disk(save_path)
         wrapped_gitaly_errors do
           gitaly_repository_client.create_bundle(save_path)

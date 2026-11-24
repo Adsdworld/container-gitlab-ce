@@ -214,6 +214,21 @@ module Gitlab
         )
       end
 
+      # Yields the chunks of a tar archive of the tree of commit_id, without the excluded paths.
+      def get_archive_tar(commit_id, exclude: [])
+        request = Gitaly::GetArchiveRequest.new(
+          repository: @gitaly_repo,
+          commit_id: commit_id,
+          prefix: '',
+          format: Gitaly::GetArchiveRequest::Format::TAR,
+          include_lfs_blobs: false,
+          exclude: exclude.map { |path| encode_binary(path) }
+        )
+
+        response = gitaly_client_call(@storage, :repository_service, :get_archive, request, timeout: GitalyClient.long_timeout)
+        response.each { |chunk| yield chunk.data }
+      end
+
       def write_ref(ref_path, ref, old_ref)
         request = Gitaly::WriteRefRequest.new(
           repository: @gitaly_repo,

@@ -1345,6 +1345,18 @@ class Repository
     )
   end
 
+  # Like #squash_commits, but the squashed commit keeps the given author.
+  def squash_commits_as(user, author:, start_sha:, end_sha:, message:)
+    raw.squash(
+      user,
+      start_sha: start_sha,
+      end_sha: end_sha,
+      author: author,
+      message: message,
+      sign: sign_commits?
+    )
+  end
+
   # Returns the initial commit (first commit with no parents) for the given ref
   #
   # @param ref [String] The reference to start from (default: default branch)

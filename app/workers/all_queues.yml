@@ -4362,6 +4362,16 @@
   :idempotent: true
   :tags: []
   :queue_namespace:
+- :name: graphify_rewrite
+  :worker_name: GraphifyRewriteWorker
+  :feature_category: :source_code_management
+  :has_external_dependencies: true
+  :urgency: :low
+  :resource_boundary: :unknown
+  :weight: 1
+  :idempotent: true
+  :tags: []
+  :queue_namespace:
 - :name: group_destroy
   :worker_name: GroupDestroyWorker
   :feature_category: :groups_and_projects

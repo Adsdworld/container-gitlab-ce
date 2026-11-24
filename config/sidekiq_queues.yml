@@ -661,6 +661,8 @@
   - 1
 - - govern_policy_engine_organization_settings_drift_check
   - 1
+- - graphify_rewrite
+  - 1
 - - group_destroy
   - 1
 - - group_export
