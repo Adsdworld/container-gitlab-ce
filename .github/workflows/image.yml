@@ -60,21 +60,7 @@ jobs:
           cache-to: type=gha,mode=max
       - name: Check the patched Ruby files
         run: |
-          # GitLab is not started: the patched files only have to load and the glob logic to hold.
-          files=$(grep '^+++ b/' container/fork.patch | cut -c7- | grep '\.rb$' || true)
-          docker run --rm --entrypoint bash container-gitlab-ce:test -c "
-            cd /opt/gitlab/embedded/service/gitlab-rails
-            for f in $files; do /opt/gitlab/embedded/bin/ruby -wc \$f > /dev/null || exit 1; done
-            /opt/gitlab/embedded/bin/ruby -e '
-              module Gitlab; module Diff; end; end
-              load \"lib/gitlab/diff/ui_ignore.rb\"
-              u = Gitlab::Diff::UiIgnore.from_patterns([\"graphify-out/\", \"*.lock\", \"docs/**/*.md\"])
-              abort \"ui_ignore broken\" unless u.ignored?(\"a/graphify-out/graph.json\") &&
-                u.ignored?(\"yarn.lock\") && u.ignored?(\"docs/a/b.md\") &&
-                !u.ignored?(\"graphify-outer/x\") && !u.ignored?(\"app/x.rb\")
-              puts \"ui_ignore ok\"'
-            test -f app/services/ci/precommit/amend_commit_service.rb
-            grep -q 'precommit: 20' app/models/concerns/enums/ci/pipeline.rb"
+          docker run --rm -v "$PWD/container:/check:ro" --entrypoint bash container-gitlab-ce:test /check/check.sh
       - name: Push
         if: github.ref == 'refs/heads/main'
         uses: docker/build-push-action@v7
