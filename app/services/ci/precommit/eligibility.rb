@@ -14,9 +14,9 @@ module Ci
       end
 
       def eligible?
-        return false if branch == project.default_branch
-        return false if sha.blank? || Marker.marked?(project, sha)
-        return false unless single_parent?
+        return false if branch == project.default_branch || sha.blank?
+        return false if target_branches.empty? || Marker.marked?(project, sha)
+        return false unless amendable_head?
 
         config.present?
       end
@@ -37,11 +37,16 @@ module Ci
       attr_reader :project, :branch, :sha
 
       def target_branches
-        project.source_of_merge_requests.opened.where(source_branch: branch).distinct.pluck(:target_branch)
+        @target_branches ||=
+          project.source_of_merge_requests.opened.where(source_branch: branch).distinct.pluck(:target_branch)
       end
 
-      def single_parent?
-        project.repository.commit(sha)&.parent_ids&.one? || false
+      # One parent, and no `[ci skip]`: such a push keeps the regular behavior.
+      def amendable_head?
+        commit = project.repository.commit(sha)
+
+        commit.present? && commit.parent_ids.one? &&
+          !commit.message.to_s.match?(Gitlab::Ci::Pipeline::Chain::Skip::SKIP_PATTERN)
       end
     end
   end

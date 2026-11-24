@@ -104,7 +104,8 @@ module Gitlab
         #    the database, do they stop counting towards the line and byte limits.
         def filter_diff_options(options, default_options = {})
           allowed_options = [:ignore_whitespace_change, :max_files, :max_lines,
-            :limits, :expanded, :collect_all_paths, :generated_files, :collapse_deleted_files, :offset_index]
+            :limits, :expanded, :collect_all_paths, :generated_files, :collapse_deleted_files, :offset_index,
+            :ui_ignore]
 
           if default_options
             actual_defaults = default_options.dup
