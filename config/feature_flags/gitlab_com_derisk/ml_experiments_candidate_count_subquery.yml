@@ -1,0 +1,11 @@
+---
+name: ml_experiments_candidate_count_subquery
+description: Count the candidates of only the experiments on the page in the GraphQL
+  mlExperiments field
+feature_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/639584
+introduced_by_url: https://gitlab.com/gitlab-org/gitlab/-/merge_requests/270964
+rollout_issue_url: https://gitlab.com/gitlab-org/gitlab/-/work_items/640099
+milestone: '19.7'
+group: group::mlops
+type: gitlab_com_derisk
+default_enabled: false
