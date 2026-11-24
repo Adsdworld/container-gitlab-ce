@@ -11,6 +11,7 @@ grep '^+++ b/' /check/fork.patch | cut -c7- | grep '\.rb$' | while read -r file;
 done
 
 "$ruby" -e '
+  class Object; def present?; respond_to?(:empty?) ? !empty? : !!self; end; end # ActiveSupport is not loaded
   module Gitlab; module Diff; end; end
   load "lib/gitlab/diff/ui_ignore.rb"
   ignore = Gitlab::Diff::UiIgnore.from_patterns(["graphify-out/", "*.lock", "docs/**/*.md", "/root.txt"])
