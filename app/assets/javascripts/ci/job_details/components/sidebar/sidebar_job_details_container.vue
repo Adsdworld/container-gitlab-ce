@@ -124,6 +124,7 @@ export default {
       external: s__('JobSource|External'),
       external_pull_request_event: s__('JobSource|External Pull Request'),
       merge_request_event: s__('JobSource|Merge Request'),
+      precommit: s__('JobSource|Precommit'),
       ondemand_dast_scan: s__('JobSource|On-Demand DAST Scan'),
       ondemand_dast_validation: s__('JobSource|On-Demand DAST Validation'),
       parent_pipeline: s__('JobSource|Parent Pipeline'),

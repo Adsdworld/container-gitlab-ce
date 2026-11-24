@@ -27,6 +27,20 @@ module Git
       super && !skip_branch_pipeline?
     end
 
+    # A branch with an open merge request and a gitlab-precommit.yaml on its target branch gets its
+    # precommit pipeline first. The regular pipeline follows once that step is over.
+    override :create_pipeline
+    def create_pipeline
+      return super unless create_pipeline? && precommit_pipeline?
+
+      Ci::Precommit::CreatePipelineWorker.perform_async(
+        project.id, current_user.id, branch_name, newrev, oldrev, params[:pipeline_creation_request])
+    end
+
+    def precommit_pipeline?
+      Ci::Precommit::Eligibility.new(project, branch: branch_name, sha: newrev).eligible?
+    end
+
     def skip_branch_pipeline?
       project.ci_skip_branch_pipelines_for_mrs? &&
         params[:merge_request_source_branches]&.include?(Gitlab::Git.ref_name(ref))

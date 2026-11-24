@@ -40,6 +40,9 @@ module Git
     end
 
     def process_changes(ref_type, action, changes, execute_project_hooks:)
+      changes = changes.reject { |change| precommit_tmp_ref?(change[:ref]) }
+      return if changes.empty?
+
       push_service_class = push_service_class_for(ref_type)
 
       create_bulk_push_event = changes.size > Gitlab::CurrentSettings.push_event_activities_limit
@@ -126,6 +129,12 @@ module Git
         current_user,
         Gitlab::DataBuilder::Push.build_bulk(action: action, ref_type: ref_type, changes: changes)
       )
+    end
+
+    # The temporary branches of Ci::Precommit::AmendCommitService are internal: no push event,
+    # webhook or pipeline for them.
+    def precommit_tmp_ref?(ref)
+      ref.to_s.start_with?("#{Gitlab::Git::BRANCH_REF_PREFIX}#{Ci::Precommit::AmendCommitService::TMP_BRANCH_PREFIX}")
     end
 
     def push_service_class_for(ref_type)

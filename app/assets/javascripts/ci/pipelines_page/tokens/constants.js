@@ -57,4 +57,8 @@ export const PIPELINE_SOURCES = [
     text: s__('PipelineSource|Dependency Management Security Update'),
     value: 'dependency_management_security_update',
   },
+  {
+    text: s__('PipelineSource|Precommit'),
+    value: 'precommit',
+  },
 ];

@@ -23,7 +23,6 @@ module Git
       return unless Gitlab::Git.branch_ref?(ref)
 
       enqueue_update_mrs
-      enqueue_graphify_rewrite
       enqueue_detect_repository_languages
       enqueue_record_project_target_platforms
 
@@ -48,13 +47,6 @@ module Git
         ref,
         params.slice(:push_options, :gitaly_context).deep_stringify_keys
       )
-    end
-
-    def enqueue_graphify_rewrite
-      return unless Gitlab::Graphify::Builder.available?
-      return if removing_branch? || default_branch?
-
-      GraphifyRewriteWorker.perform_async(project.id, current_user.id, branch_name, newrev)
     end
 
     def enqueue_detect_repository_languages

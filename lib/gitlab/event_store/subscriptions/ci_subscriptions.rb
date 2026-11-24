@@ -11,6 +11,8 @@ module Gitlab
           # then remove the if block and verify that DuoWorkflows::Workflow works as expected.
           store.subscribe ::Ci::Workloads::UpdateWorkloadStatusEventWorker, to: ::Ci::PipelineFinishedEvent,
             if: ->(event) { event.data[:status] != 'manual' }
+          store.subscribe ::Ci::Precommit::ApplyArtifactsWorker, to: ::Ci::PipelineFinishedEvent,
+            if: ->(event) { event.data[:source].to_s == 'precommit' && event.data[:status] != 'manual' }
           store.subscribe ::Ci::InitializePipelinesIidSequenceWorker, to: ::Projects::ProjectCreatedEvent
           store.subscribe ::Ci::PipelineSchedules::DeactivateSchedulesWorker,
             to: ::ProjectAuthorizations::AuthorizationsRemovedEvent

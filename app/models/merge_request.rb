@@ -1319,8 +1319,13 @@ class MergeRequest < ApplicationRecord
     return unless diff_refs
 
     strong_memoize(:diff_stats) do
-      project.repository.diff_stats(diff_refs.base_sha, diff_refs.head_sha)
+      project.repository.diff_stats(diff_refs.base_sha, diff_refs.head_sha)&.reject_paths(ui_ignore)
     end
+  end
+
+  # Files hidden in the review UI, from the gitlab-precommit.yaml of the target branch.
+  def ui_ignore
+    strong_memoize(:ui_ignore) { Gitlab::Diff::UiIgnore.for_merge_request(self) }
   end
 
   def diff_size

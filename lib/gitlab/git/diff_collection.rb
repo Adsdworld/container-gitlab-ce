@@ -37,6 +37,8 @@ module Gitlab
       def initialize(iterator, options = {})
         @iterator = iterator
         @generated_files = options.fetch(:generated_files, nil)
+        @ui_ignore = options.fetch(:ui_ignore, nil)
+        @ui_ignore = nil if @ui_ignore&.empty?
         @collapse_deleted_files = !!options.fetch(:collapse_deleted_files, false)
         @limits = self.class.limits(options)
         @enforce_limits = !!options.fetch(:limits, true)
@@ -222,6 +224,13 @@ module Gitlab
         deleted ? diff.collapse_deleted! : diff.collapse!
       end
 
+      def ui_ignored_serialized?(raw)
+        return false unless @ui_ignore
+
+        new_path, old_path = raw.is_a?(Hash) ? [raw[:new_path], raw[:old_path]] : [raw.new_path, raw.old_path]
+        @ui_ignore.ignored?(new_path.presence || old_path)
+      end
+
       def binary_patch?(raw)
         diff_content = raw.is_a?(Hash) ? raw[:diff] : raw.patch
 
@@ -242,6 +251,8 @@ module Gitlab
 
           path = raw.to_path
           path = raw.from_path if path.nil? || path.empty?
+          next if @ui_ignore&.ignored?(path)
+
           generated = @generated_files.include?(path) if @generated_files
           # Diff.new re-encodes raw.patch in place and can leave it as invalid UTF-8, so decide this first.
           collapse_deleted = collapse_deleted_file?(raw)
@@ -279,6 +290,8 @@ module Gitlab
 
         @iterator.each_with_index do |raw, iterator_index|
           @empty = false
+
+          next if ui_ignored_serialized?(raw)
 
           if @enforce_limits && i >= limits[:max_files]
             @overflow = true

@@ -61,7 +61,8 @@ module Enums
           container_registry_push: 16,
           duo_workflow: 17,
           pipeline_execution_policy_schedule: 18,
-          dependency_management_security_update: 19
+          dependency_management_security_update: 19,
+          precommit: 20
         }
       end
 
@@ -86,14 +87,15 @@ module Enums
           :container_registry_push,
           :duo_workflow,
           :pipeline_execution_policy_schedule,
-          :dependency_management_security_update
+          :dependency_management_security_update,
+          :precommit
         )
       end
 
-      # `parent_pipeline` is the only dangling source whose configuration is controlled by users.
-      # The other dangling sources have internally generated configs.
+      # `parent_pipeline` and `precommit` are the dangling sources whose configuration is controlled
+      # by users. The other dangling sources have internally generated configs.
       def self.gitlab_controlled_sources
-        dangling_sources.except(:parent_pipeline)
+        dangling_sources.except(:parent_pipeline, :precommit)
       end
 
       # Workloads are always dangling but they also have almost all sources of CI variables disabled by default as they

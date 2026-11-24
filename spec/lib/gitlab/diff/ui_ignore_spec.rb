@@ -39,15 +39,29 @@ RSpec.describe Gitlab::Diff::UiIgnore, feature_category: :code_review_workflow d
     end
   end
 
-  describe '.for' do
-    let_it_be(:project) { create(:project, :repository) }
+  describe '.from_patterns' do
+    it 'hides the files matching a pattern' do
+      ui_ignore = described_class.from_patterns(['graphify-out/', '*.lock'])
 
-    it 'is empty without a sha' do
-      expect(described_class.for(project.repository, nil)).to be_empty
+      expect(ui_ignore.ignored?('graphify-out/graph.json')).to be(true)
+      expect(ui_ignore.ignored?('yarn.lock')).to be(true)
+      expect(ui_ignore.ignored?('app/models/user.rb')).to be(false)
+    end
+  end
+
+  describe '.for_merge_request' do
+    let_it_be(:project) { create(:project, :repository) }
+    let(:merge_request) { build_stubbed(:merge_request, source_project: project, target_project: project) }
+
+    it 'is empty when the target branch has no gitlab-precommit.yaml' do
+      expect(described_class.for_merge_request(merge_request)).to be_empty
     end
 
-    it 'is empty when the file does not exist' do
-      expect(described_class.for(project.repository, project.commit.sha)).to be_empty
+    it 'uses the hide_in_ui patterns of the target branch' do
+      config = instance_double(Gitlab::Precommit::Config, enabled?: true, hide_in_ui: ['graphify-out/'])
+      allow(Gitlab::Precommit::Config).to receive(:new).and_return(config)
+
+      expect(described_class.for_merge_request(merge_request).ignored?('graphify-out/graph.json')).to be(true)
     end
   end
 end

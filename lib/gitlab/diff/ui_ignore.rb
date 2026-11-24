@@ -2,17 +2,25 @@
 
 module Gitlab
   module Diff
-    # Paths hidden from the merge request diffs, from the `.gitlab-ui-ignore` file of the
-    # target branch. One pattern per line, as in a `.gitignore`: `#` comments, `*`, `?`
-    # and `**`, a leading or inner `/` anchors the pattern, a trailing `/` matches a
-    # directory. Negations (`!`) are not supported.
+    # Paths hidden from the merge request diffs: the `hide_in_ui` patterns of the
+    # gitlab-precommit.yaml of the merge request target branch. As in a `.gitignore`: `*`, `?`
+    # and `**`, a leading or inner `/` anchors the pattern, a trailing `/` matches a directory.
+    # Lines starting with `#` or `!` are ignored: negations are not supported.
     class UiIgnore
-      FILE = '.gitlab-ui-ignore'
+      def self.empty
+        new('')
+      end
 
-      def self.for(repository, sha)
-        return new('') if sha.blank?
+      def self.from_patterns(patterns)
+        new(Array(patterns).join("\n"))
+      end
 
-        new(repository.blob_data_at(sha, FILE).to_s.dup.force_encoding(Encoding::UTF_8).scrub)
+      def self.for_merge_request(merge_request)
+        sha = merge_request.target_branch_sha
+        return empty if sha.blank?
+
+        config = Gitlab::Precommit::Config.new(merge_request.target_project, sha)
+        config.enabled? ? from_patterns(config.hide_in_ui) : empty
       end
 
       def initialize(content)

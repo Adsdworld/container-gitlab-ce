@@ -601,7 +601,12 @@ class MergeRequestDiff < ApplicationRecord
   def diff_stats
     return unless diff_refs
 
-    repository.diff_stats(diff_refs.base_sha, diff_refs.head_sha)
+    repository.diff_stats(diff_refs.base_sha, diff_refs.head_sha)&.reject_paths(ui_ignore)
+  end
+
+  # Files hidden in the review UI, see Gitlab::Diff::UiIgnore.
+  def ui_ignore
+    merge_request&.ui_ignore || Gitlab::Diff::UiIgnore.empty
   end
   strong_memoize_attr(:diff_stats)
 
@@ -998,7 +1003,7 @@ class MergeRequestDiff < ApplicationRecord
   end
 
   def build_merge_request_diff_files(diffs)
-    sort_diffs(reject_ui_ignored(diffs)).map.with_index do |diff, index|
+    sort_diffs(diffs).map.with_index do |diff, index|
       diff_hash = diff.to_hash.merge(
         binary: false,
         merge_request_diff_id: self.id,
@@ -1035,6 +1040,8 @@ class MergeRequestDiff < ApplicationRecord
     comparison = diff_refs.compare_in(repository.project)
 
     return yield unless comparison
+
+    diff_options[:ui_ignore] = ui_ignore
 
     yield(comparison)
   end
@@ -1152,6 +1159,7 @@ class MergeRequestDiff < ApplicationRecord
     strong_memoize(:compare_diffs) do
       options = Commit.max_diff_options
       options[:generated_files] = compare.generated_files(merge_base: base_commit_sha)
+      options[:ui_ignore] = ui_ignore
 
       compare.diffs(options)
     end
@@ -1266,17 +1274,6 @@ class MergeRequestDiff < ApplicationRecord
     Gitlab::Diff::FileCollectionSorter.new(diffs).sort
   end
 
-  # The files listed in the .gitlab-ui-ignore of the merge base are not stored, so no
-  # diff, file tree or stat built from the stored files shows them.
-  def reject_ui_ignored(diffs)
-    return diffs if ui_ignore.empty?
-
-    diffs.reject { |diff| ui_ignore.ignored?(diff.new_path.presence || diff.old_path) }
-  end
-
-  def ui_ignore
-    strong_memoize(:ui_ignore) { Gitlab::Diff::UiIgnore.for(repository, base_commit_sha) }
-  end
 
   # Downloads external diff to a temp storage location.
   def cache_external_diff

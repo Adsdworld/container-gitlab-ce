@@ -14,6 +14,13 @@ module Gitlab
         @collection.each(&block)
       end
 
+      # @param ui_ignore [Gitlab::Diff::UiIgnore] files hidden in the review UI
+      def reject_paths(ui_ignore)
+        return self if ui_ignore.nil? || ui_ignore.empty?
+
+        self.class.new(@collection.reject { |stat| ui_ignore.ignored?(stat.path) })
+      end
+
       def find_by_path(path)
         indexed_by_path[path]
       end

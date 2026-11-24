@@ -379,6 +379,10 @@
   - 1
 - - ci_pipeline_schedules_deactivate_schedules
   - 1
+- - ci_precommit_apply_artifacts
+  - 1
+- - ci_precommit_create_pipeline
+  - 1
 - - ci_runners_export_usage_csv
   - 1
 - - ci_runners_process_runner_version_update
@@ -660,8 +664,6 @@
 - - google_cloud_fetch_google_ip_list
   - 1
 - - govern_policy_engine_organization_settings_drift_check
-  - 1
-- - graphify_rewrite
   - 1
 - - group_destroy
   - 1
