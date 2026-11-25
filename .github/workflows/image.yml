@@ -8,7 +8,7 @@ on:
     inputs:
       gitlab_tag:
         description: Tag of gitlab/gitlab-ce to patch
-        default: nightly
+        default: 19.5.3-ce.0
 
 permissions:
   contents: read
@@ -24,7 +24,7 @@ jobs:
       contents: read
       packages: write
     env:
-      GITLAB_TAG: ${{ inputs.gitlab_tag || 'nightly' }}
+      GITLAB_TAG: ${{ inputs.gitlab_tag || '19.5.3-ce.0' }}
     steps:
       - uses: actions/checkout@v7
         with:
